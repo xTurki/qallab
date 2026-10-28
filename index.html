@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>قلّاب</title>
+<meta name="description" content="حوّل الصور إلى PDF والعكس، وبين جميع صيغ الصور، داخل جهازك وبدون إنترنت.">
+<meta name="theme-color" content="#1F3A5F" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101722" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="قلّاب">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <img src="icons/icon-192.png" alt="" width="40" height="40">
+      <div>
+        <h1>قلّاب</h1>
+        <p class="sub">كل التحويل يتم على جهازك. ملفاتك لا تُرفع لأي مكان.</p>
+      </div>
+    </div>
+    <button id="installBtn" class="ghost" hidden>تثبيت التطبيق</button>
+  </header>
+
+  <label id="drop" class="drop" for="picker">
+    <input id="picker" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff,.pdf,application/pdf">
+    <span class="drop-icon" aria-hidden="true">
+      <svg viewBox="0 0 48 48" width="44" height="44"><rect x="7" y="9" width="22" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="19" y="14" width="22" height="28" rx="3" fill="var(--paper)" stroke="var(--accent)" stroke-width="2.5"/><path d="M30 22v12M25 29l5 5 5-5" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <strong>اسحب الملفات هنا أو اضغط للاختيار</strong>
+    <span class="hint">PDF · JPG · PNG · WEBP · HEIC · TIFF · GIF · BMP · AVIF · SVG · ICO</span>
+  </label>
+
+  <section id="queueSec" class="panel" hidden>
+    <div class="panel-head">
+      <h2>الملفات <span id="count" class="num"></span></h2>
+      <button id="clearBtn" class="link">مسح الكل</button>
+    </div>
+    <ul id="queue" class="queue"></ul>
+  </section>
+
+  <section class="panel">
+    <h2>حوّل إلى</h2>
+    <div id="targets" class="targets" role="radiogroup" aria-label="الصيغة المطلوبة"></div>
+
+    <div class="opts">
+      <div class="opt" data-for="quality">
+        <label for="quality">الجودة <output id="qOut" class="num">90%</output></label>
+        <input id="quality" type="range" min="40" max="100" value="90">
+      </div>
+      <div class="opt wide" data-for="dpi">
+        <label for="dpi">دقة صفحات PDF</label>
+        <select id="dpi">
+          <option value="72" data-label="72 نقطة/إنش — للشاشة">72</option>
+          <option value="96" data-label="96 نقطة/إنش — سريع">96</option>
+          <option value="150" data-label="150 نقطة/إنش — متوازن" selected>150</option>
+          <option value="200" data-label="200 نقطة/إنش — واضح">200</option>
+          <option value="300" data-label="300 نقطة/إنش — للطباعة">300</option>
+          <option value="600" data-label="600 نقطة/إنش — أرشفة">600</option>
+        </select>
+        <span id="dpiNote" class="note"></span>
+      </div>
+      <div class="opt" data-for="page">
+        <label for="page">حجم صفحة PDF</label>
+        <select id="page">
+          <option value="fit" selected>بحجم الصورة</option>
+          <option value="a4">A4 ‏(210×297 مم)</option>
+          <option value="letter">Letter ‏(8.5×11 إنش)</option>
+        </select>
+      </div>
+      <div class="opt" data-for="maxdim">
+        <label for="maxdim">أقصى طول للصورة</label>
+        <select id="maxdim">
+          <option value="0" selected>الأبعاد الأصلية</option>
+          <option value="3840">3840 بكسل — 4K</option>
+          <option value="2560">2560 بكسل</option>
+          <option value="1920">1920 بكسل — مناسب للشاشات</option>
+          <option value="1280">1280 بكسل — للمشاركة والواتساب</option>
+          <option value="800">800 بكسل — صغير جداً</option>
+        </select>
+      </div>
+      <div class="opt wide" data-for="pdfc">
+        <label for="pdfc">ضغط ملفات PDF</label>
+        <select id="pdfc">
+          <option value="none" selected>بدون ضغط</option>
+          <option value="medium" data-dpi="150" data-label="متوسط — 150 نقطة/إنش">متوسط</option>
+          <option value="strong" data-dpi="100" data-label="قوي — 100 نقطة/إنش">قوي</option>
+        </select>
+        <span id="pdfcNote" class="note">الضغط يحوّل كل صفحة إلى صورة، فلن تقدر تحدد النص أو تبحث فيه. إذا طلع الناتج أكبر من الأصل يُبقى الملف الأصلي.</span>
+      </div>
+      <div class="opt check" data-for="merge">
+        <input id="merge" type="checkbox" checked>
+        <label for="merge">دمج كل الملفات في PDF واحد</label>
+      </div>
+      <div class="opt" data-for="bg">
+        <label for="bg">خلفية المناطق الشفافة</label>
+        <input id="bg" type="color" value="#ffffff">
+      </div>
+    </div>
+
+    <button id="goBtn" class="primary" disabled>أضف ملفات أولاً</button>
+    <div id="progress" class="progress" hidden><div id="bar"></div></div>
+    <p id="status" class="status" aria-live="polite"></p>
+  </section>
+
+  <section id="resultsSec" class="panel" hidden>
+    <div class="panel-head">
+      <h2>الناتج <span id="rcount" class="num"></span></h2>
+      <button id="zipBtn" class="ghost">تنزيل الكل ZIP</button>
+    </div>
+    <div id="bulk" class="bulk" hidden></div>
+    <ul id="results" class="results"></ul>
+    <p class="small tip">اضغط على أي ملف لمعاينته.</p>
+  </section>
+
+  <footer class="foot">يعمل بدون إنترنت بعد أول فتح · <span id="ver">v1.4</span></footer>
+</div>
+
+<div id="editor" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
+  <div class="sheet-card">
+    <div class="sheet-head">
+      <h2 id="edTitle">تعديل الصورة</h2>
+      <span id="edName" class="name small"></span>
+    </div>
+
+    <div id="stage" class="stage" dir="ltr">
+      <div id="stageInner" class="stage-inner">
+        <canvas id="edCanvas"></canvas>
+        <div id="cropBox" class="crop">
+          <span class="h nw" data-h="nw"></span><span class="h ne" data-h="ne"></span>
+          <span class="h sw" data-h="sw"></span><span class="h se" data-h="se"></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="ed-row">
+      <span class="ed-label">القص</span>
+      <div id="ratios" class="chips"></div>
+    </div>
+    <div class="ed-row">
+      <span class="ed-label">تدوير</span>
+      <div class="chips">
+        <button type="button" id="rotL" class="chip" aria-label="تدوير لليسار">↺ 90°</button>
+        <button type="button" id="rotR" class="chip" aria-label="تدوير لليمين">↻ 90°</button>
+        <span id="cropInfo" class="small"></span>
+      </div>
+    </div>
+
+    <div class="ed-row col">
+      <span class="ed-label">المقاس النهائي</span>
+      <div class="size-row">
+        <label class="field"><span>العرض</span><input id="outW" type="number" inputmode="numeric" min="1" max="20000"></label>
+        <button type="button" id="lockBtn" class="lock" aria-pressed="true" aria-label="قفل النسبة بين العرض والارتفاع"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+        <label class="field"><span>الارتفاع</span><input id="outH" type="number" inputmode="numeric" min="1" max="20000"></label>
+        <span class="small">بكسل</span>
+      </div>
+      <div id="pcts" class="chips"></div>
+      <span id="sizeNote" class="note"></span>
+    </div>
+
+    <div class="sheet-actions">
+      <button type="button" id="edReset" class="link">إعادة ضبط</button>
+      <span class="spacer"></span>
+      <button type="button" id="edCancel" class="ghost">إلغاء</button>
+      <button type="button" id="edSave" class="primary sm">حفظ التعديل</button>
+    </div>
+  </div>
+</div>
+
+<div id="viewer" class="sheet viewer" hidden role="dialog" aria-modal="true" aria-labelledby="vName">
+  <div class="sheet-card vcard">
+    <div class="vhead">
+      <div class="meta">
+        <span id="vName" class="name"></span>
+        <span id="vMeta" class="small"></span>
+      </div>
+      <button type="button" id="vClose" class="x" aria-label="إغلاق المعاينة">×</button>
+    </div>
+    <div id="vBody" class="vbody"></div>
+    <div class="vnav">
+      <button type="button" id="vPrev" class="chip" aria-label="السابق">→ السابق</button>
+      <span id="vCount" class="small"></span>
+      <button type="button" id="vNext" class="chip" aria-label="التالي">التالي ←</button>
+    </div>
+    <div id="vActions" class="vactions"></div>
+  </div>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script src="lib/pako.min.js"></script>
+<script src="lib/pdf-lib.min.js"></script>
+<script src="lib/pdf.min.js"></script>
+<script src="lib/UTIF.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="app.js"></script>
+<script src="editor.js"></script>
+<script src="viewer.js"></script>
+</body>
+</html>
