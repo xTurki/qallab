@@ -1,4 +1,4 @@
-const CACHE = 'qallab-v6';
+const CACHE = 'qallab-v7';
 const ASSETS = [
   "./",
   "app.js",

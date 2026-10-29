@@ -106,7 +106,9 @@ function renderQueue() {
     meta.querySelector('.name').textContent = f.file.name;
     li.append(th, meta);
     if (f.kind !== 'pdf') {
-      const eb = document.createElement('button'); eb.className = 'editbtn'; eb.type = 'button'; eb.textContent = 'قص وتحجيم';
+      const eb = document.createElement('button'); eb.className = 'editbtn'; eb.type = 'button';
+      eb.innerHTML = '<svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M2 6h14a2 2 0 0 1 2 2v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>قص وتحجيم</span>';
+      eb.setAttribute('aria-label', 'قص وتحجيم ' + f.file.name);
       eb.onclick = () => openEditor(f); li.appendChild(eb);
     }
     const x = document.createElement('button'); x.className = 'x'; x.textContent = '×'; x.setAttribute('aria-label', 'إزالة ' + f.file.name);
