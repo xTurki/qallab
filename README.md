@@ -16,14 +16,17 @@
 </p>
 
 <p align="center">
-  <img alt="PWA" src="https://img.shields.io/badge/PWA-installable-1F3A5F">
-  <img alt="Offline" src="https://img.shields.io/badge/works-offline-2E7D57">
-  <img alt="Privacy" src="https://img.shields.io/badge/files-stay_on_device-D9792E">
-  <img alt="No build" src="https://img.shields.io/badge/build_step-none-5B6878">
+  <img alt="PWA" src="https://img.shields.io/badge/PWA-installable-007AFF">
+  <img alt="Offline" src="https://img.shields.io/badge/works-offline-34C759">
+  <img alt="Privacy" src="https://img.shields.io/badge/files-stay_on_device-FF9500">
+  <img alt="No build" src="https://img.shields.io/badge/build_step-none-8E8E93">
 </p>
 
 <p align="center">
-  <img src="docs/home-light.webp" width="190" alt="الشاشة الرئيسية">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/home-dark.webp">
+    <img src="docs/home-light.webp" width="190" alt="الشاشة الرئيسية">
+  </picture>
   <img src="docs/editor.webp" width="190" alt="محرر القص والتحجيم">
   <img src="docs/results.webp" width="190" alt="قائمة الملفات الناتجة">
   <img src="docs/viewer.webp" width="190" alt="معاينة الناتج">
@@ -34,6 +37,17 @@
 ## ليش قلّاب؟
 
 أغلب مواقع التحويل ترفع ملفاتك لخوادمها: عقود، هويات، صور شخصية. **قلّاب** يسوي كل شي داخل المتصفح، فالملف ما يطلع من جهازك أبداً. تثبّته على الجوال مثل أي تطبيق، ويشتغل في الطيارة أو بدون شبكة بعد أول فتح.
+
+## التصميم
+
+واجهة على نهج **إرشادات أبل للتصميم (Apple HIG)**، تحس فيها كأنك في تطبيق آيفون أصلي:
+
+- **خط النظام**: SF Arabic على أجهزة أبل، وIBM Plex Sans Arabic على باقي الأجهزة.
+- **قوائم مجمّعة** للملفات والخيارات مثل شاشة الإعدادات، مع مفتاح تبديل وشريط تمرير وقوائم اختيار.
+- **أزرار كبسولية** بمساحة لمس لا تقل عن 44 نقطة.
+- **نوافذ منبثقة من الأسفل** للمحرر والمعاينة، بمقبض سحب، و«إلغاء» و«حفظ» في الشريط العلوي.
+- **فاتح وداكن** تلقائياً حسب إعدادات جهازك، ومصمم من اليمين لليسار بالكامل.
+- يحترم إعداد **تقليل الحركة** في الجهاز.
 
 ## الميزات
 
@@ -85,14 +99,14 @@
 ## طريقة الاستخدام
 
 1. اسحب الملفات للصفحة، أو اضغط لاختيارها، أو الصقها مباشرة.
-2. اختر **قص وتحجيم** بجانب أي صورة لو تبغى تعدّلها (اختياري).
+2. اضغط زر **قص وتحجيم** تحت أي صورة لو تبغى تعدّلها (اختياري).
 3. اختر الصيغة المطلوبة، واضبط الجودة والدقة والمقاس.
 4. اضغط **حوّل**، ثم اضغط أي ملف ناتج لمعاينته وتنزيله أو حفظه أو مشاركته.
 
 ## التثبيت على الجوال
 
 - **آيفون (Safari)**: زر المشاركة ← **إضافة إلى الشاشة الرئيسية**.
-- **أندرويد (Chrome)**: زر **تثبيت التطبيق** أعلى الصفحة، أو قائمة المتصفح ← **تثبيت**.
+- **أندرويد (Chrome)**: زر **تثبيت** بجانب العنوان، أو قائمة المتصفح ← **تثبيت**.
 - **الكمبيوتر (Chrome / Edge)**: أيقونة التثبيت في شريط العنوان.
 
 بعد التثبيت يفتح التطبيق في نافذة مستقلة ويشتغل بدون إنترنت.
@@ -120,14 +134,15 @@
 ```
 qallab/
 ├── index.html             الواجهة
-├── styles.css             التصميم (فاتح وداكن)
+├── design-tokens.css      متغيرات تصميم أبل: الألوان والخطوط والمسافات (فاتح وداكن)
+├── styles.css             تصميم الواجهة فوق المتغيرات
 ├── app.js                 التحويل والترميز وبناء PDF
 ├── editor.js              محرر القص والتحجيم ومقاسات الدقة
 ├── viewer.js              المعاينة والتنزيل والحفظ والمشاركة
 ├── sw.js                  Service Worker للعمل بدون إنترنت
 ├── manifest.webmanifest   بيانات تثبيت التطبيق
 ├── lib/                   المكتبات (محلية)
-├── fonts/                 خط IBM Plex Sans Arabic
+├── fonts/                 خط IBM Plex Sans Arabic (بديل لخط النظام)
 ├── icons/                 أيقونات التطبيق
 └── docs/                  لقطات الشاشة
 ```
@@ -149,7 +164,10 @@ python3 -m http.server 8080
 
 ### عند التحديث
 
-غيّر رقم الإصدار في أول سطر من `sw.js`، مثلاً `qallab-v5` إلى `qallab-v6`، عشان الأجهزة المثبّت عليها التطبيق تحمّل النسخة الجديدة. وإذا أضفت ملفاً جديداً، أضفه لقائمة `ASSETS` في نفس الملف.
+- الصفحة وملفات CSS وJavaScript تُجلب من الشبكة أولاً، فأي تحديث تنشره يظهر للمستخدم أول ما يفتح التطبيق وهو متصل. الكاش يُستخدم فقط بدون إنترنت.
+- المكتبات والخطوط والأيقونات تُقدَّم من الكاش أولاً لأنها ما تتغير.
+- غيّر رقم الكاش في أول سطر من `sw.js`، مثلاً `qallab-v10` إلى `qallab-v11`، ورقم الإصدار أسفل `index.html`، عشان النسخة المحفوظة للعمل بدون إنترنت تتحدث.
+- إذا أضفت ملفاً جديداً، أضفه لقائمة `ASSETS` في `sw.js`.
 
 ### المكتبات
 
@@ -161,7 +179,7 @@ python3 -m http.server 8080
 | [UTIF.js](https://github.com/photopea/UTIF.js) | 3.1.0 | قراءة وكتابة TIFF | MIT |
 | [pako](https://github.com/nodeca/pako) | 2.1.0 | فك ضغط TIFF | MIT / Zlib |
 | [JSZip](https://github.com/Stuk/jszip) | 3.10.1 | تنزيل الكل كـ ZIP | MIT |
-| [IBM Plex Sans Arabic](https://github.com/IBM/plex) | 5.0.20 | الخط | OFL-1.1 |
+| [IBM Plex Sans Arabic](https://github.com/IBM/plex) | 5.0.20 | الخط البديل خارج أجهزة أبل | OFL-1.1 |
 
 مُرمّزات BMP وICO وGIF مكتوبة داخل `app.js` بدون مكتبات.
 
@@ -173,6 +191,6 @@ python3 -m http.server 8080
 
 ### English
 
-**Qallab** (Arabic for *the one who flips things over*) is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
+**Qallab** (Arabic for *the one who flips things over*) is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. The interface follows Apple's Human Interface Guidelines (system font, inset grouped lists, capsule buttons, bottom sheets) in automatic light and dark mode, fully right-to-left. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
 
 </div>
