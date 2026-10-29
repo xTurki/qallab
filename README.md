@@ -7,8 +7,8 @@
 <h1 align="center">قلّاب</h1>
 
 <p align="center">
-  <b>حوّل الصور إلى PDF والعكس، وبين كل صيغ الصور، على جهازك نفسه.</b><br>
-  بدون رفع ملفات، بدون حساب، ويشتغل حتى بدون إنترنت.
+  <b>صغّر، اضغط، قص، وغيّر صيغة هويتك وجوازك ومستنداتك… وهي ما تطلع من جهازك.</b><br>
+  حوّل الصور إلى PDF والعكس وبين كل الصيغ. بدون رفع ملفات، بدون حساب، ويشتغل حتى بدون إنترنت.
 </p>
 
 <p align="center">
@@ -36,7 +36,37 @@
 
 ## ليش قلّاب؟
 
-أغلب مواقع التحويل ترفع ملفاتك لخوادمها: عقود، هويات، صور شخصية. **قلّاب** يسوي كل شي داخل المتصفح، فالملف ما يطلع من جهازك أبداً. تثبّته على الجوال مثل أي تطبيق، ويشتغل في الطيارة أو بدون شبكة بعد أول فتح.
+### تحتاج تعدّل مستند حساس؟
+
+كلنا مرّينا فيها: بوابة حكومية أو جهة عمل أو جامعة تطلب صورة **الهوية** أو **الجواز** أو **رخصة القيادة** أو **كشف حساب**، وبشروط:
+
+- «الحجم لا يتجاوز 1 ميقا» ← تحتاج **تصغّر** الصورة أو **تضغط** الـ PDF.
+- «بصيغة PDF فقط» أو «JPG فقط» ← تحتاج **تغيّر الصيغة**، وصور الآيفون تجي HEIC.
+- «صورة شخصية مربعة 600×600» أو «بنسبة 3:4» ← تحتاج **تقص بنسبة معيّنة** و**تحجّم بالبكسل**.
+- «ارفع الوجهين في ملف واحد» ← تحتاج **تدمج** صورتين في PDF واحد.
+
+والحل المعتاد؟ تبحث عن «تحويل صورة إلى PDF» وتدخل أول موقع وترفع له جوازك. **وهنا المشكلة:** الموقع يستقبل نسخة من أخطر مستنداتك على خوادم ما تعرف وين هي، ولا مين يشوفها، ولا كم تنحفظ.
+
+### قلّاب يسوي كل هذا… وملفك ما يطلع من جهازك
+
+- 🔒 **ما فيه رفع أصلاً.** التحويل والضغط والقص كله يصير داخل متصفحك على جوالك أو كمبيوترك. ما فيه خادم يستقبل ملفات، فما فيه شي يتسرّب.
+- ✈️ **يشتغل بوضع الطيران.** بعد أول فتح، افصل الإنترنت كامل وحوّل ملفاتك عادي. هذا أبسط دليل إن ما فيه شي ينرسل.
+- 🧹 **ما يحتفظ بشي.** الملفات تبقى في ذاكرة الصفحة بس، وتنمسح أول ما تسكّرها أو تضغط «مسح الكل». ما تنحفظ في التطبيق ولا في المتصفح.
+- 👤 **بدون حساب ولا تسجيل.** ما نطلب منك إيميل ولا رقم ولا أي معلومة.
+- 🚫 **بدون إعلانات ولا تتبّع.** ما فيه أدوات تحليل ولا ملفات تعريف ارتباط ولا أي اتصال بمواقع خارجية.
+- 🔍 **الكود مفتوح.** كل سطر موجود في هذا المستودع، وتقدر تراجعه بنفسك أو تخلي أحد تثق فيه يراجعه.
+
+### وش تقدر تسوي فيه
+
+| تبي… | في قلّاب |
+|---|---|
+| تصغّر حجم صورة الهوية أو الجواز | شريط **الجودة** + **أقصى طول للصورة**، ويوريك نسبة التوفير لكل ملف |
+| تضغط PDF كبير | **ضغط PDF** متوسط أو قوي، ويبقي الأصل إذا طلع الناتج أكبر |
+| تغيّر الصيغة | من أي صيغة (بما فيها HEIC من الآيفون) إلى PDF أو JPG أو PNG أو WEBP وغيرها |
+| تقص بمقاس معيّن | محرر **قص وتحجيم**: نسب جاهزة (1:1، 3:4، A4…) ومقاس دقيق بالبكسل |
+| تجمع الوجهين أو عدة أوراق | **دمج** كل الصور وملفات PDF في ملف واحد بالترتيب اللي تبيه |
+
+تثبّته على الجوال أو الكمبيوتر مثل أي تطبيق، ويكون جاهز وقت ما تحتاجه.
 
 ## التصميم
 
@@ -134,9 +164,13 @@
 
 ## الخصوصية
 
-- كل المعالجة تتم في متصفحك بـ JavaScript. ما فيه خادم يستقبل الملفات أصلاً.
-- ما فيه تحليلات ولا تتبّع ولا ملفات تعريف ارتباط.
-- كل المكتبات والخطوط محفوظة داخل المستودع، فالتطبيق ما يتصل بأي موقع خارجي.
+مصمّم من البداية للمستندات الحساسة:
+
+- **المعالجة كلها محلية.** القراءة والتحويل والضغط والقص تتم في متصفحك بـ JavaScript. الموقع مجرد ملفات ثابتة على GitHub Pages، ما فيه خادم يستقبل أو يخزّن ملفات.
+- **الاتصال الوحيد** هو تحميل التطبيق نفسه (الصفحة والأكواد) من رابطه. ملفاتك ما تدخل في أي طلب شبكة.
+- **لا شي ينحفظ.** الملفات وناتجها تعيش في ذاكرة الصفحة فقط. التطبيق ما يستخدم أي تخزين في المتصفح، فتسكير الصفحة يمسح كل شي.
+- **بدون أطراف خارجية.** كل المكتبات والخطوط محفوظة داخل المستودع. ما فيه تحليلات ولا تتبّع ولا ملفات تعريف ارتباط.
+- **تأكد بنفسك:** شغّل وضع الطيران وجرّب، أو افتح أدوات المطوّر في المتصفح وراقب تبويب Network وأنت تحوّل.
 
 ## ملاحظات مهمة
 
@@ -212,6 +246,6 @@ python3 -m http.server 8080
 
 ### English
 
-**Qallab** (Arabic for *the one who flips things over*) is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. The interface follows Apple's Human Interface Guidelines (system font, inset grouped lists, capsule buttons, bottom sheets) in automatic light and dark mode, fully right-to-left. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
+**Qallab** (Arabic for *the one who flips things over*) is built for sensitive documents such as ID cards, passports and bank statements: shrink, compress, crop to an exact size or change the format without uploading anything. It is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. The interface follows Apple's Human Interface Guidelines (system font, inset grouped lists, capsule buttons, bottom sheets) in automatic light and dark mode, fully right-to-left. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
 
 </div>
