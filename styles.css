@@ -196,7 +196,7 @@ body.locked{overflow:hidden}
 .sheet-card{width:100%;max-width:640px;max-height:100%;overflow:auto;background:var(--sheet-bg);border-radius:var(--radius-modal) var(--radius-modal) 0 0;
   padding-block:var(--space-2) calc(env(safe-area-inset-bottom,0px) + var(--space-4));
   padding-left:max(var(--space-4),env(safe-area-inset-left,0px));padding-right:max(var(--space-4),env(safe-area-inset-right,0px));
-  display:flex;flex-direction:column;gap:var(--space-4);box-shadow:var(--shadow-2xl);animation:slideUp var(--duration-slow) var(--ease-smooth)}
+  display:flex;flex-direction:column;gap:var(--space-5);box-shadow:var(--shadow-2xl);animation:slideUp var(--duration-slow) var(--ease-smooth)}
 @media (min-width:700px){
   .sheet{align-items:center;padding:var(--space-6)}
   .sheet-card{border-radius:var(--radius-modal);padding-top:var(--space-4);animation:scaleIn var(--duration-normal) var(--ease-smooth)}
@@ -227,12 +227,14 @@ body.locked{overflow:hidden}
 .h.sw{left:-2px;bottom:-2px;border-bottom-width:5px;border-left-width:5px;cursor:nesw-resize}
 .h.se{right:-2px;bottom:-2px;border-bottom-width:5px;border-right-width:5px;cursor:nwse-resize}
 .h::after{content:"";position:absolute;inset:-10px}
-.ed-row{display:flex;align-items:center;gap:var(--space-2) var(--space-3);flex-wrap:wrap;min-height:var(--touch-target-min);padding:var(--space-2-5) var(--space-4)}
-.ed-row.col{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
-.ed-row:not(.col) .note{flex-basis:100%}
-.ed-row .note:empty{display:none}
-.ed-label{font-size:var(--text-body);min-width:56px}
-.chips{display:flex;gap:var(--space-1-5);flex-wrap:wrap;align-items:center}
+/* each editor control gets its own titled card, with clear space between sections (block flow, nothing can overlap) */
+.ed-sec{display:block}
+.ed-title{font-size:var(--text-footnote);font-weight:var(--font-weight-regular);color:var(--label-secondary);padding-inline:var(--space-4);margin-bottom:var(--space-2)}
+.ed-card{display:block;background:var(--sheet-card);border-radius:var(--radius-lg);padding:var(--space-4)}
+.ed-card > * + *{margin-top:var(--space-3)}
+.ed-card .note{display:block}
+.ed-card .note:empty{display:none}
+.chips{display:flex;gap:var(--space-2);flex-wrap:wrap;align-items:center}
 .chip{min-height:32px;padding:0 var(--space-3);border-radius:var(--radius-button);background:var(--fill-tertiary);color:var(--label-primary);
   font-size:var(--text-subhead);font-weight:var(--font-weight-medium);font-variant-numeric:tabular-nums;
   transition:background var(--duration-fast) var(--ease-out),color var(--duration-fast) var(--ease-out),transform var(--duration-faster) var(--ease-out)}
