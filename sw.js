@@ -1,4 +1,4 @@
-const CACHE = 'qallab-v9';
+const CACHE = 'qallab-v10';
 const ASSETS = [
   "./",
   "app.js",
@@ -31,7 +31,22 @@ self.addEventListener('install', (e) => {
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
+/* App shell (page, css, our js, manifest): network first, so an online visit always shows the latest version;
+   the cache is the offline fallback. Libraries, fonts and icons never change: cache first. */
+const isShell = (url) => url.origin === location.origin && !/\/(lib|fonts|icons)\//.test(url.pathname);
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (isShell(url)) {
+    e.respondWith(
+      fetch(e.request, { cache: 'no-cache' })
+        .then((res) => {
+          if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
+          return res;
+        })
+        .catch(() => caches.match(e.request, { ignoreSearch: true }))
+    );
+    return;
+  }
   e.respondWith(caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || fetch(e.request)));
 });
