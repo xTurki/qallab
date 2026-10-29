@@ -1,4 +1,4 @@
-const CACHE = 'qallab-v8';
+const CACHE = 'qallab-v9';
 const ASSETS = [
   "./",
   "app.js",
@@ -25,7 +25,8 @@ const ASSETS = [
   "styles.css",
 ];
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache:'reload' skips the HTTP cache (GitHub Pages sends max-age=600), so a new version never stores stale files
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
   e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));

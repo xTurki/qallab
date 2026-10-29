@@ -453,7 +453,14 @@ window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); inst
 $('installBtn').onclick = async () => { if (!installEvt) return; installEvt.prompt(); await installEvt.userChoice; installEvt = null; $('installBtn').hidden = true; };
 
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {}));
+  // a new version took over: reload once so the open page shows it (skip on first install, when there was no controller)
+  const hadController = !!navigator.serviceWorker.controller;
+  let reloaded = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || reloaded || state.busy) return;
+    reloaded = true; location.reload();
+  });
 }
 
 renderTargets(); syncOptions();
