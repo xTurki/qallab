@@ -5,55 +5,60 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>قلّاب</title>
 <meta name="description" content="حوّل الصور إلى PDF والعكس، وبين جميع صيغ الصور، داخل جهازك وبدون إنترنت.">
-<meta name="theme-color" content="#1F3A5F" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#101722" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="قلّاب">
+<link rel="stylesheet" href="design-tokens.css">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <img src="icons/icon-192.png" alt="" width="40" height="40">
-      <div>
-        <h1>قلّاب</h1>
-        <p class="sub">كل التحويل يتم على جهازك. ملفاتك لا تُرفع لأي مكان.</p>
-      </div>
+      <img src="icons/icon-192.png" alt="" width="44" height="44">
+      <h1>قلّاب</h1>
+      <button id="installBtn" class="btn-tinted sm" hidden>تثبيت</button>
     </div>
-    <button id="installBtn" class="ghost" hidden>تثبيت التطبيق</button>
+    <p class="sub">كل التحويل يتم على جهازك. ملفاتك لا تُرفع لأي مكان.</p>
   </header>
 
   <label id="drop" class="drop" for="picker">
     <input id="picker" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff,.pdf,application/pdf">
     <span class="drop-icon" aria-hidden="true">
-      <svg viewBox="0 0 48 48" width="44" height="44"><rect x="7" y="9" width="22" height="28" rx="3" fill="none" stroke="currentColor" stroke-width="2.5"/><rect x="19" y="14" width="22" height="28" rx="3" fill="var(--paper)" stroke="var(--accent)" stroke-width="2.5"/><path d="M30 22v12M25 29l5 5 5-5" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <svg viewBox="0 0 24 24" width="30" height="30"><path d="M14 3H7.5A2.5 2.5 0 0 0 5 5.5v13A2.5 2.5 0 0 0 7.5 21h9a2.5 2.5 0 0 0 2.5-2.5V8z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 3v5h5M12 11v6M9 14h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </span>
-    <strong>اسحب الملفات هنا أو اضغط للاختيار</strong>
+    <strong>أضف ملفات</strong>
+    <span class="drop-sub">اسحبها هنا أو اضغط للاختيار</span>
     <span class="hint">PDF · JPG · PNG · WEBP · HEIC · TIFF · GIF · BMP · AVIF · SVG · ICO</span>
   </label>
 
-  <section id="queueSec" class="panel" hidden>
-    <div class="panel-head">
+  <section id="queueSec" class="group" hidden>
+    <div class="group-head">
       <h2>الملفات <span id="count" class="num"></span></h2>
-      <button id="clearBtn" class="link">مسح الكل</button>
+      <button id="clearBtn" class="btn-plain destructive">مسح الكل</button>
     </div>
-    <ul id="queue" class="queue"></ul>
+    <ul id="queue" class="list queue"></ul>
   </section>
 
-  <section class="panel">
-    <h2>حوّل إلى</h2>
+  <section class="group">
+    <div class="group-head"><h2>حوّل إلى</h2></div>
     <div id="targets" class="targets" role="radiogroup" aria-label="الصيغة المطلوبة"></div>
+  </section>
 
-    <div class="opts">
-      <div class="opt" data-for="quality">
-        <label for="quality">الجودة <output id="qOut" class="num">90%</output></label>
-        <input id="quality" type="range" min="40" max="100" value="90">
+  <section class="group opts-group">
+    <div class="group-head"><h2>الخيارات</h2></div>
+    <div class="list opts">
+      <div class="opt stack" data-for="quality">
+        <label for="quality">الجودة</label>
+        <output id="qOut" class="num value">90%</output>
+        <input id="quality" type="range" min="40" max="100" value="90" style="--p:83.3%">
       </div>
-      <div class="opt wide" data-for="dpi">
+      <div class="opt" data-for="dpi">
         <label for="dpi">دقة صفحات PDF</label>
         <select id="dpi">
           <option value="72" data-label="72 نقطة/إنش — للشاشة">72</option>
@@ -84,7 +89,7 @@
           <option value="800">800 بكسل — صغير جداً</option>
         </select>
       </div>
-      <div class="opt wide" data-for="pdfc">
+      <div class="opt" data-for="pdfc">
         <label for="pdfc">ضغط ملفات PDF</label>
         <select id="pdfc">
           <option value="none" selected>بدون ضغط</option>
@@ -93,39 +98,46 @@
         </select>
         <span id="pdfcNote" class="note">الضغط يحوّل كل صفحة إلى صورة، فلن تقدر تحدد النص أو تبحث فيه. إذا طلع الناتج أكبر من الأصل يُبقى الملف الأصلي.</span>
       </div>
-      <div class="opt check" data-for="merge">
-        <input id="merge" type="checkbox" checked>
+      <div class="opt" data-for="merge">
         <label for="merge">دمج كل الملفات في PDF واحد</label>
+        <input id="merge" type="checkbox" class="switch" role="switch" checked>
       </div>
       <div class="opt" data-for="bg">
         <label for="bg">خلفية المناطق الشفافة</label>
         <input id="bg" type="color" value="#ffffff">
       </div>
     </div>
+  </section>
 
-    <button id="goBtn" class="primary" disabled>أضف ملفات أولاً</button>
+  <div class="run">
+    <button id="goBtn" class="btn-primary lg" disabled>أضف ملفات أولاً</button>
     <div id="progress" class="progress" hidden><div id="bar"></div></div>
     <p id="status" class="status" aria-live="polite"></p>
-  </section>
+  </div>
 
-  <section id="resultsSec" class="panel" hidden>
-    <div class="panel-head">
+  <section id="resultsSec" class="group" hidden>
+    <div class="group-head">
       <h2>الناتج <span id="rcount" class="num"></span></h2>
-      <button id="zipBtn" class="ghost">تنزيل الكل ZIP</button>
+      <button id="zipBtn" class="btn-plain">تنزيل الكل ZIP</button>
     </div>
     <div id="bulk" class="bulk" hidden></div>
-    <ul id="results" class="results"></ul>
-    <p class="small tip">اضغط على أي ملف لمعاينته.</p>
+    <ul id="results" class="list results"></ul>
+    <p class="group-foot">اضغط على أي ملف لمعاينته.</p>
   </section>
 
-  <footer class="foot">يعمل بدون إنترنت بعد أول فتح · <span id="ver">v1.4</span></footer>
+  <footer class="foot">يعمل بدون إنترنت بعد أول فتح · <span id="ver">v1.5</span></footer>
 </div>
 
 <div id="editor" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">
   <div class="sheet-card">
-    <div class="sheet-head">
-      <h2 id="edTitle">تعديل الصورة</h2>
-      <span id="edName" class="name small"></span>
+    <div class="grabber" aria-hidden="true"></div>
+    <div class="sheet-nav">
+      <button type="button" id="edCancel" class="btn-plain">إلغاء</button>
+      <div class="sheet-title">
+        <h2 id="edTitle">تعديل الصورة</h2>
+        <span id="edName" class="name"></span>
+      </div>
+      <button type="button" id="edSave" class="btn-plain strong">حفظ</button>
     </div>
 
     <div id="stage" class="stage" dir="ltr">
@@ -138,37 +150,33 @@
       </div>
     </div>
 
-    <div class="ed-row">
-      <span class="ed-label">القص</span>
-      <div id="ratios" class="chips"></div>
-    </div>
-    <div class="ed-row">
-      <span class="ed-label">تدوير</span>
-      <div class="chips">
-        <button type="button" id="rotL" class="chip" aria-label="تدوير لليسار">↺ 90°</button>
-        <button type="button" id="rotR" class="chip" aria-label="تدوير لليمين">↻ 90°</button>
-        <span id="cropInfo" class="small"></span>
+    <div class="list">
+      <div class="ed-row">
+        <span class="ed-label">القص</span>
+        <div id="ratios" class="chips"></div>
+      </div>
+      <div class="ed-row">
+        <span class="ed-label">تدوير</span>
+        <div class="chips">
+          <button type="button" id="rotL" class="chip" aria-label="تدوير لليسار">↺ 90°</button>
+          <button type="button" id="rotR" class="chip" aria-label="تدوير لليمين">↻ 90°</button>
+        </div>
+        <span id="cropInfo" class="note"></span>
+      </div>
+      <div class="ed-row col">
+        <span class="ed-label">المقاس النهائي</span>
+        <div class="size-row">
+          <label class="field"><span>العرض</span><input id="outW" type="number" inputmode="numeric" min="1" max="20000"></label>
+          <button type="button" id="lockBtn" class="lock" aria-pressed="true" aria-label="قفل النسبة بين العرض والارتفاع"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <label class="field"><span>الارتفاع</span><input id="outH" type="number" inputmode="numeric" min="1" max="20000"></label>
+          <span class="unit">بكسل</span>
+        </div>
+        <div id="pcts" class="chips"></div>
+        <span id="sizeNote" class="note"></span>
       </div>
     </div>
 
-    <div class="ed-row col">
-      <span class="ed-label">المقاس النهائي</span>
-      <div class="size-row">
-        <label class="field"><span>العرض</span><input id="outW" type="number" inputmode="numeric" min="1" max="20000"></label>
-        <button type="button" id="lockBtn" class="lock" aria-pressed="true" aria-label="قفل النسبة بين العرض والارتفاع"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M9 7H7a5 5 0 0 0 0 10h2M15 7h2a5 5 0 0 1 0 10h-2M8 12h8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
-        <label class="field"><span>الارتفاع</span><input id="outH" type="number" inputmode="numeric" min="1" max="20000"></label>
-        <span class="small">بكسل</span>
-      </div>
-      <div id="pcts" class="chips"></div>
-      <span id="sizeNote" class="note"></span>
-    </div>
-
-    <div class="sheet-actions">
-      <button type="button" id="edReset" class="link">إعادة ضبط</button>
-      <span class="spacer"></span>
-      <button type="button" id="edCancel" class="ghost">إلغاء</button>
-      <button type="button" id="edSave" class="primary sm">حفظ التعديل</button>
-    </div>
+    <button type="button" id="edReset" class="btn-plain reset">إعادة ضبط</button>
   </div>
 </div>
 
@@ -179,7 +187,7 @@
         <span id="vName" class="name"></span>
         <span id="vMeta" class="small"></span>
       </div>
-      <button type="button" id="vClose" class="x" aria-label="إغلاق المعاينة">×</button>
+      <button type="button" id="vClose" class="close" aria-label="إغلاق المعاينة"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button>
     </div>
     <div id="vBody" class="vbody"></div>
     <div class="vnav">

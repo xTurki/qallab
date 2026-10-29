@@ -439,7 +439,10 @@ drop.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
 document.addEventListener('paste', (e) => { const f = [...(e.clipboardData?.files || [])]; if (f.length) addFiles(f); });
 $('clearBtn').onclick = () => { state.files.forEach((f) => f.thumb && URL.revokeObjectURL(f.thumb)); state.files = []; renderQueue(); syncOptions(); clearResults(); setStatus(''); updateDpiLabels(); };
 $('pdfc').onchange = syncOptions;
-$('quality').oninput = (e) => ($('qOut').textContent = e.target.value + '%');
+$('quality').oninput = (e) => {
+  const r = e.target; $('qOut').textContent = r.value + '%';
+  r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min)) * 100 + '%'); // slider track fill
+};
 $('goBtn').onclick = run;
 $('zipBtn').onclick = downloadZip;
 

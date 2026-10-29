@@ -1,7 +1,8 @@
-const CACHE = 'qallab-v5';
+const CACHE = 'qallab-v6';
 const ASSETS = [
   "./",
   "app.js",
+  "design-tokens.css",
   "editor.js",
   "viewer.js",
   "fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2",

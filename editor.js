@@ -126,7 +126,8 @@ function refreshRotation(resetCrop) {
 
 function layoutStage() {
   const stage = $('stage'), r = ed.rotated;
-  const maxW = stage.clientWidth || 300, maxH = Math.max(200, Math.min(window.innerHeight * 0.48, 520));
+  const pad = parseFloat(getComputedStyle(stage).paddingLeft) * 2 || 0;
+  const maxW = stage.clientWidth - pad || 300, maxH = Math.max(200, Math.min(window.innerHeight * 0.48, 520));
   const s = Math.min(maxW / r.width, maxH / r.height, 1);
   ed.disp = { w: Math.max(1, Math.round(r.width * s)), h: Math.max(1, Math.round(r.height * s)) };
   const c = $('edCanvas'), dpr = Math.min(window.devicePixelRatio || 1, 2);
