@@ -77,11 +77,12 @@ function openViewer(i) {
   view.i = i; sheetOpen($('viewer'), $('vClose'));
   showCurrent();
 }
-function closeViewer() { view.token++; sheetClose($('viewer')); $('vBody').innerHTML = ''; }
+function dropPreview() { if (view.cleanup) { view.cleanup(); view.cleanup = null; } }
+function closeViewer(fromY) { view.token++; dropPreview(); sheetClose($('viewer'), typeof fromY === 'number' ? fromY : 0); $('vBody').innerHTML = ''; }
 
 async function showCurrent() {
   const rs = state.results, r = rs[view.i]; if (!r) return closeViewer();
-  const token = ++view.token;
+  const token = ++view.token; dropPreview();
   $('vName').textContent = r.name;
   const dims = r.w ? `<span class="num">${r.w}×${r.h}</span> · ` : r.pages ? `${r.pages} ${r.pages === 1 ? 'صفحة' : 'صفحات'} · ` : '';
   $('vMeta').innerHTML = dims + `<span class="num">${fmtSize(r.blob.size)}</span>`;
@@ -93,7 +94,7 @@ async function showCurrent() {
   const body = $('vBody'); body.innerHTML = '<p class="small vwait">جارٍ تجهيز المعاينة…</p>';
   try {
     if (r.blob.type === 'application/pdf') await previewPdf(r, body, token);
-    else if (r.blob.type === 'image/tiff') previewTiff(r, body);
+    else if (r.blob.type === 'image/tiff') await previewTiff(r, body, token);
     else {
       const img = new Image(); img.alt = r.name; img.className = 'vimg'; img.src = r.url;
       await img.decode().catch(() => {});
@@ -106,8 +107,10 @@ async function showCurrent() {
   }
 }
 
-async function previewTiff(r, body) {
+async function previewTiff(r, body, token) {
+  await need('tiff');
   const buf = await r.blob.arrayBuffer();
+  if (token !== view.token) return;
   const ifd = UTIF.decode(buf)[0]; UTIF.decodeImage(buf, ifd);
   const rgba = UTIF.toRGBA8(ifd), c = document.createElement('canvas');
   c.width = ifd.width; c.height = ifd.height; c.className = 'vimg';
@@ -115,31 +118,51 @@ async function previewTiff(r, body) {
   body.innerHTML = ''; body.appendChild(c);
 }
 
-const PDF_PREVIEW_MAX = 30;
+/* PDF preview: every page gets a placeholder of the right shape, but a page is only drawn while it is near
+   the visible area, and its pixels are released again once it scrolls far away. A 300-page file opens instantly. */
 async function previewPdf(r, body, token) {
   const pdf = await openPdf(new Uint8Array(await r.blob.arrayBuffer()));
   if (token !== view.token) { pdf.destroy(); return; }
   body.innerHTML = '';
   const width = Math.min(body.clientWidth || 360, 900), dpr = Math.min(window.devicePixelRatio || 1, 2);
-  const n = Math.min(pdf.numPages, PDF_PREVIEW_MAX);
-  for (let p = 1; p <= n; p++) {
-    const page = await pdf.getPage(p);
-    const vp1 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: (width / vp1.width) * dpr });
-    const c = document.createElement('canvas'); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height); c.className = 'vpage';
-    const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-    body.appendChild(c);
-    await page.render({ canvasContext: ctx, viewport: vp }).promise;
-    if (token !== view.token) { pdf.destroy(); return; }
+  const queue = []; let busy = false, dead = false;
+  const pump = async () => {
+    if (busy) return; busy = true;
+    while (queue.length && !dead) {
+      const c = queue.shift(); if (c.dataset.state !== 'queued') continue;
+      try {
+        const page = await pdf.getPage(+c.dataset.p);
+        const vp1 = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: (width / vp1.width) * dpr });
+        if (dead) break;
+        c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height); c.style.aspectRatio = c.width + ' / ' + c.height;
+        const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
+        await page.render({ canvasContext: ctx, viewport: vp }).promise; page.cleanup();
+        if (c.dataset.state === 'queued') c.dataset.state = 'done'; else { c.width = c.height = 1; } // scrolled away meanwhile
+      } catch (e) { if (!dead) console.error(e); }
+    }
+    busy = false;
+  };
+  const io = new IntersectionObserver((entries) => {
+    for (const en of entries) {
+      const c = en.target;
+      if (en.isIntersecting) { if (c.dataset.state === 'idle') { c.dataset.state = 'queued'; queue.push(c); } }
+      else if (c.dataset.state === 'done') { c.width = c.height = 1; c.dataset.state = 'idle'; }
+      else if (c.dataset.state === 'queued') c.dataset.state = 'idle';
+    }
+    pump();
+  }, { root: body, rootMargin: '900px 0px' });
+  view.cleanup = () => { dead = true; io.disconnect(); pdf.destroy(); };
+  const first = (await pdf.getPage(1)).getViewport({ scale: 1 });
+  if (token !== view.token) return;
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const c = document.createElement('canvas'); c.className = 'vpage'; c.width = c.height = 1;
+    c.dataset.p = p; c.dataset.state = 'idle'; c.style.aspectRatio = first.width + ' / ' + first.height;
+    c.setAttribute('aria-label', 'صفحة ' + p); body.appendChild(c); io.observe(c);
   }
-  if (pdf.numPages > n) {
-    const more = document.createElement('p'); more.className = 'small vwait';
-    more.textContent = `تعرض المعاينة أول ${n} صفحة من ${pdf.numPages}. الملف المحفوظ يحتوي كل الصفحات.`;
-    body.appendChild(more);
-  }
-  pdf.destroy();
 }
 
 $('vClose').onclick = closeViewer;
+sheetDrag($('viewer'), closeViewer);
 $('vPrev').onclick = () => { if (view.i > 0) { view.i--; showCurrent(); } };
 $('vNext').onclick = () => { if (view.i < state.results.length - 1) { view.i++; showCurrent(); } };
 $('viewer').addEventListener('click', (e) => { if (e.target === $('viewer')) closeViewer(); });

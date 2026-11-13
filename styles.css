@@ -32,6 +32,24 @@
   --label-secondary:rgba(235,235,245,.6);
 }}
 
+/* Text sizes follow the reader's own setting: Dynamic Type on iPhone and iPad (-apple-system-body), the browser's
+   font size elsewhere. --u is one design pixel at the default setting; each size is clamped so an extreme
+   setting cannot break the layout. (-webkit-touch-callout limits the system font to iOS: on the Mac it is 13px.) */
+html{font-size:100%}
+:root{--u:.0625rem}
+@supports (font:-apple-system-body) and (-webkit-touch-callout:none){
+  html{font:-apple-system-body;font-family:var(--font-system)}
+  :root{--u:calc(1rem / 17)}
+}
+:root{
+  --text-caption2:clamp(10px,calc(11 * var(--u)),17px); --text-caption1:clamp(11px,calc(12 * var(--u)),18px);
+  --text-footnote:clamp(12px,calc(13 * var(--u)),20px); --text-subhead:clamp(13px,calc(15 * var(--u)),23px);
+  --text-callout:clamp(14px,calc(16 * var(--u)),24px); --text-body:clamp(15px,calc(17 * var(--u)),26px);
+  --text-headline:clamp(15px,calc(17 * var(--u)),26px); --text-title3:clamp(17px,calc(20 * var(--u)),30px);
+  --text-title2:clamp(19px,calc(22 * var(--u)),32px); --text-title1:clamp(24px,calc(28 * var(--u)),40px);
+  --text-large-title:clamp(28px,calc(34 * var(--u)),46px);
+}
+
 [hidden]{display:none!important}
 body{background:var(--bg-grouped-primary);line-height:1.47}
 .wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:var(--space-6);
@@ -178,6 +196,7 @@ input[type=color]::-moz-color-swatch{border:1px solid var(--separator);border-ra
 .run{display:flex;flex-direction:column;gap:var(--space-3)}
 .progress{height:4px;border-radius:2px;background:var(--fill-secondary);overflow:hidden}
 #bar{height:100%;width:0;background:var(--blue-fill);border-radius:2px;transition:width var(--duration-normal) var(--ease-out)}
+.cancel{align-self:center}
 .status{font-size:var(--text-footnote);color:var(--label-secondary);text-align:center;min-height:1.5em;padding-inline:var(--space-2)}
 .status:empty{display:none}
 .status.err{color:var(--red-text)} .status.ok{color:var(--green-text)}
@@ -217,7 +236,10 @@ body.locked{overflow:hidden}
 /* the card scrolls; its sections must keep their height instead of being squeezed into it */
 .sheet-card > *{flex-shrink:0}
 .vcard > .vbody{flex-shrink:1}
-.grabber{flex:none;align-self:center;width:36px;height:5px;border-radius:3px;background:var(--system-gray3)}
+.grabber{position:relative;flex:none;align-self:center;width:36px;height:5px;border-radius:3px;background:var(--system-gray3)}
+.grabber::after{content:"";position:absolute;inset:-12px -60px} /* easier to grab */
+[data-drag]{touch-action:none}
+.sheet.closing{pointer-events:none}
 .sheet .list{background:var(--sheet-card)}
 .sheet-nav{display:grid;grid-template-columns:minmax(64px,auto) 1fr minmax(64px,auto);align-items:center;gap:var(--space-2);margin-top:calc(-1 * var(--space-2))}
 .sheet-nav #edSave{justify-self:end}
@@ -265,7 +287,7 @@ body.locked{overflow:hidden}
 .reset{align-self:center}
 
 /* viewer */
-.vcard{max-width:900px;height:100%;overflow:hidden;padding-top:var(--space-4);gap:var(--space-3)}
+.vcard{max-width:900px;height:100%;overflow:hidden;gap:var(--space-3)}
 @media (min-width:700px){.vcard{height:auto}}
 .vhead{display:flex;align-items:center;gap:var(--space-3)}
 .vhead .meta .name{font-size:var(--text-headline);font-weight:var(--font-weight-semibold)}
@@ -279,7 +301,7 @@ body.locked{overflow:hidden}
   background-size:20px 20px;background-position:0 0,10px 10px}
 .vimg{max-width:100%;max-height:62vh;height:auto;object-fit:contain;margin:auto;display:block}
 canvas.vimg{width:auto}
-.vpage{width:100%;height:auto;box-shadow:var(--shadow-md);border-radius:2px}
+.vpage{width:100%;height:auto;flex:none;background:#fff;box-shadow:var(--shadow-md);border-radius:2px}
 .vwait{margin:auto;text-align:center}
 .vnav{display:flex;align-items:center;justify-content:space-between;gap:var(--space-2)}
 .vnav[hidden],.vnav:has(#vPrev[hidden]){display:none}

@@ -113,8 +113,8 @@ async function openEditor(item) {
   ed.sx = e ? e.scaleX : 1; ed.sy = e ? e.scaleY : 1; ed.lock = e ? e.scaleX === e.scaleY : true; ed.ratio = e ? e.ratio ?? null : null;
   refreshRotation(false);
 }
-function closeEditor() {
-  sheetClose($('editor'));
+function closeEditor(fromY) {
+  sheetClose($('editor'), typeof fromY === 'number' ? fromY : 0);
   ed.item = null; ed.src = ed.rotated = null;
 }
 
@@ -212,6 +212,7 @@ $('rotL').onclick = () => { ed.rot -= 90; refreshRotation(true); };
 $('rotR').onclick = () => { ed.rot += 90; refreshRotation(true); };
 $('edReset').onclick = () => { ed.rot = 0; ed.ratio = null; ed.sx = ed.sy = 1; ed.lock = true; refreshRotation(true); };
 $('edCancel').onclick = closeEditor;
+sheetDrag($('editor'), closeEditor);
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('editor').hidden) closeEditor(); });
 $('editor').addEventListener('click', (e) => { if (e.target === $('editor')) closeEditor(); });
 window.addEventListener('resize', () => { if (ed.rotated && !$('editor').hidden) layoutStage(); });

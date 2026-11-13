@@ -60,8 +60,8 @@
 
 | تبي… | في قلّاب |
 |---|---|
-| تصغّر حجم صورة الهوية أو الجواز | شريط **الجودة** + **أقصى طول للصورة**، ويوريك نسبة التوفير لكل ملف |
-| تضغط PDF كبير | **ضغط PDF** متوسط أو قوي، ويبقي الأصل إذا طلع الناتج أكبر |
+| تصغّر حجم صورة الهوية أو الجواز | اختر **الحجم الأقصى للملف** (مثلاً 1 MB) والتطبيق يضبط الجودة والمقاس لحاله، أو تحكّم يدوياً بشريط **الجودة** و**أقصى طول للصورة** |
+| تضغط PDF كبير | **ضغط ذكي** يصغّر الصور داخل الملف ويخلي النص قابلاً للتحديد، أو **متوسط / قوي** للملفات الممسوحة ضوئياً. ويبقي الأصل إذا ما صغر |
 | تغيّر الصيغة | من أي صيغة (بما فيها HEIC من الآيفون) إلى PDF أو JPG أو PNG أو WEBP وغيرها |
 | تقص بمقاس معيّن | محرر **قص وتحجيم**: نسب جاهزة (1:1، 3:4، A4…) ومقاس دقيق بالبكسل |
 | تجمع الوجهين أو عدة أوراق | **دمج** كل الصور وملفات PDF في ملف واحد بالترتيب اللي تبيه |
@@ -87,11 +87,18 @@
 - **دمج ملفات PDF**: عدة ملفات PDF وصور في ملف واحد، بالترتيب اللي أضفتها فيه.
 - **بين صيغ الصور**: من أي صيغة إلى JPG أو PNG أو WEBP أو AVIF أو BMP أو TIFF أو ICO أو GIF.
 - **دفعات**: حوّل عشرات الملفات مرة وحدة، ونزّلها كلها في ملف ZIP.
+- **إلغاء**: زر يوقف التحويل في أي لحظة، والواجهة تبقى سلسة لأن المعالجة تشتغل في الخلفية.
 
 ### التحكم في الحجم
 - **الجودة**: شريط من 40% إلى 100% لصيغ JPG وWEBP وAVIF والصور داخل PDF.
 - **المقاس الفعلي أمام كل دقة**: يعرض مقاس الصفحة بالبكسل، مثل «150 نقطة/إنش · 1240×1754 بكسل». المقاس محسوب من أول صفحة في ملفك، مع التعرّف على A3 وA4 وA5 وLetter وLegal.
-- **ضغط PDF**: متوسط (150 نقطة/إنش) أو قوي (100). يحافظ على مقاس الورقة، وإذا طلع الناتج أكبر يبقى الأصل كما هو.
+- **الحجم الأقصى للملف**: حدّد 200 KB أو 500 KB أو 1 MB أو 2 MB أو 5 MB، والتطبيق ينزّل الجودة أولاً ثم المقاس حتى يصير الملف تحت الحد. يشتغل مع JPG وWEBP وAVIF وملفات PDF المبنية من صور.
+- **ضغط PDF** بثلاث درجات:
+  - **ذكي**: يعيد ضغط الصور داخل الملف فقط، والنص والخطوط تبقى كما هي فتقدر تحدد وتبحث.
+  - **متوسط** (150 نقطة/إنش) و**قوي** (100): يحوّل كل صفحة إلى صورة، وهذا أنسب للملفات الممسوحة ضوئياً.
+  - في كل الحالات يحافظ على مقاس الورقة، وإذا ما صغر الملف يبقى الأصل كما هو.
+- **ضغط PNG**: «أصغر بدون فقد» يحذف قناة الشفافية إذا ما لها داعي ويضغط بأقوى إعداد، و«256 لوناً» يصغّر أكثر بكثير للرسومات والمستندات.
+- **TIFF مضغوط** (Deflate) بدل الخام، و**GIF** بلوحة ألوان تُحسب من الصورة نفسها.
 - **أقصى طول للصورة**: من 800 إلى 3840 بكسل لتصغير الصور بضغطة.
 - **نسبة التوفير**: كل ملف ناتج يعرض حجمه ونسبة النقص، مثل ‎−66%‎.
 
@@ -101,7 +108,7 @@
 - **تحجيم** بالبكسل مع قفل النسبة، أو بالنسبة المئوية من 25% إلى 300%، تصغيراً أو تكبيراً.
 
 ### المخرجات
-- **معاينة** لكل ملف ناتج، بما فيها صفحات PDF وملفات TIFF، مع التنقّل بالسحب أو بالأزرار.
+- **معاينة** لكل ملف ناتج، بما فيها كل صفحات PDF وملفات TIFF، مع التنقّل بالسحب أو بالأزرار. اسحب النافذة لتحت لإغلاقها.
 - **تنزيل** إلى تطبيق الملفات أو مجلد التنزيلات.
 - **حفظ في الصور** مباشرة من الجوال.
 - **مشاركة** إلى واتساب أو البريد أو أي تطبيق، لملف واحد أو للكل.
@@ -123,7 +130,7 @@
 | SVG | ✓ | — |
 
 ¹ حسب المتصفح. Chrome وEdge يدعمونه، وSafari لا يدعم الحفظ بصيغة AVIF حالياً، فيظهر الزر معطّلاً.<br>
-² بلوحة 252 لوناً، ممتازة للرسومات والشعارات. الصور الفوتوغرافية قد تظهر فيها تدرّجات.<br>
+² بلوحة 256 لوناً تُحسب من الصورة نفسها، ممتازة للرسومات والشعارات. الصور الفوتوغرافية قد تظهر فيها تدرّجات.<br>
 ³ مربع بحد أقصى 256×256، مناسب لأيقونات المواقع.
 
 ## طريقة الاستخدام
@@ -156,6 +163,10 @@
 - **Safari**: من القائمة **File ← Add to Dock**.
 - **Chrome**: نفس خطوات ويندوز.
 
+### مشاركة الملفات للتطبيق
+
+على **أندرويد** بعد التثبيت: من المعرض أو أي تطبيق اضغط **مشاركة** واختر **قلّاب**، وتنفتح الملفات فيه مباشرة.
+
 ### فتح الملفات مباشرة
 
 بعد التثبيت بـ Chrome أو Edge على الكمبيوتر، تقدر تفتح أي PDF أو صورة في قلّاب: كلك يمين على الملف ← **Open with ← قلّاب**.
@@ -168,18 +179,18 @@
 
 - **المعالجة كلها محلية.** القراءة والتحويل والضغط والقص تتم في متصفحك بـ JavaScript. الموقع مجرد ملفات ثابتة على GitHub Pages، ما فيه خادم يستقبل أو يخزّن ملفات.
 - **الاتصال الوحيد** هو تحميل التطبيق نفسه (الصفحة والأكواد) من رابطه. ملفاتك ما تدخل في أي طلب شبكة.
-- **لا شي ينحفظ.** الملفات وناتجها تعيش في ذاكرة الصفحة فقط. التطبيق ما يستخدم أي تخزين في المتصفح، فتسكير الصفحة يمسح كل شي.
+- **لا شي ينحفظ.** الملفات وناتجها تعيش في ذاكرة الصفحة فقط، وتسكير الصفحة يمسح كل شي. الاستثناء الوحيد: لما تشارك ملفاً للتطبيق من أندرويد، ينحفظ مؤقتاً على جهازك وينمسح أول ما ينفتح التطبيق.
 - **بدون أطراف خارجية.** كل المكتبات والخطوط محفوظة داخل المستودع. ما فيه تحليلات ولا تتبّع ولا ملفات تعريف ارتباط.
 - **المتصفح نفسه يفرض هذا.** الصفحة فيها سياسة أمان (Content-Security-Policy) تمنعها من الاتصال بأي موقع خارجي أو تحميل أي شي منه، حتى لو حاول ملف خبيث يسوي كذا.
 - **تأكد بنفسك:** شغّل وضع الطيران وجرّب، أو افتح أدوات المطوّر في المتصفح وراقب تبويب Network وأنت تحوّل.
 
 ## ملاحظات مهمة
 
-- **ضغط PDF** يعيد رسم كل صفحة كصورة، فيصير النص غير قابل للتحديد أو البحث. استخدمه للملفات الممسوحة ضوئياً أو للإرسال، مو للمستندات اللي تحتاج تنسخ منها.
+- **ضغط PDF المتوسط والقوي** يعيدان رسم كل صفحة كصورة، فيصير النص غير قابل للتحديد أو البحث. استخدمهما للملفات الممسوحة ضوئياً، واستخدم **الذكي** للمستندات اللي تحتاج تنسخ منها. الضغط الذكي يصغّر صور JPEG داخل الملف فقط، فالملف اللي ما فيه صور ما يتغير حجمه كثيراً.
 - **الحفظ في الصور على الآيفون** يمر عبر قائمة المشاركة، ومنها تختار «حفظ الصورة»، لأن المتصفحات ما تسمح للمواقع تكتب في مكتبة الصور مباشرة. على أندرويد تنحفظ الصورة في التنزيلات وتظهر في المعرض.
 - **التكبير** يكبّر الصورة لكن ما يضيف تفاصيل جديدة.
 - **الملفات الضخمة جداً**، مثل PDF من مئات الصفحات بدقة 600، قد تستهلك ذاكرة كبيرة على الجوالات القديمة.
-- **معاينة PDF** تعرض أول 30 صفحة، والملف المحفوظ يحتوي كل الصفحات.
+- **الحجم الأقصى** يتحقق بتنزيل الجودة ثم تصغير المقاس، فالحد الصغير جداً مع صورة كبيرة يعطي صورة أصغر بالبكسل. صفحات PDF المنسوخة بدون ضغط ما تتأثر بالحد.
 
 ---
 
@@ -195,13 +206,23 @@ qallab/
 ├── app.js                 التحويل والترميز وبناء PDF
 ├── editor.js              محرر القص والتحجيم ومقاسات الدقة
 ├── viewer.js              المعاينة والتنزيل والحفظ والمشاركة
+├── worker.js              المعالجة في الخلفية: ترميز PNG وGIF وTIFF وBMP وكل عمليات PDF
 ├── sw.js                  Service Worker للعمل بدون إنترنت
 ├── manifest.webmanifest   بيانات تثبيت التطبيق
 ├── lib/                   المكتبات (محلية)
 ├── fonts/                 خط IBM Plex Sans Arabic (بديل لخط النظام)
 ├── icons/                 أيقونات التطبيق
-└── docs/                  لقطات الشاشة
+├── docs/                  لقطات الشاشة
+└── tests/                 اختبارات آلية تشغّل التطبيق في Chrome
 ```
+
+### الاختبارات
+
+```bash
+node tests/run.mjs
+```
+
+يشغّل خادماً محلياً ويفتح التطبيق في Chrome بدون واجهة، ويجرّب التحويل لكل الصيغ، وحد الحجم، وضغط PDF، والإلغاء، وسياسة الأمان، والمعاينة، ومشاركة الملفات، وحد صور الآيفون. يحتاج Node 22 أو أحدث وChrome أو Edge، بدون أي حزم.
 
 ### التشغيل محلياً
 
@@ -222,7 +243,7 @@ python3 -m http.server 8080
 
 - الصفحة وملفات CSS وJavaScript تُجلب من الشبكة أولاً، فأي تحديث تنشره يظهر للمستخدم أول ما يفتح التطبيق وهو متصل. الكاش يُستخدم فقط بدون إنترنت.
 - المكتبات والخطوط والأيقونات تُقدَّم من الكاش أولاً لأنها ما تتغير.
-- غيّر رقم الكاش في أول سطر من `sw.js`، مثلاً `qallab-v10` إلى `qallab-v11`، ورقم الإصدار أسفل `index.html`، عشان النسخة المحفوظة للعمل بدون إنترنت تتحدث.
+- غيّر رقم الكاش في أول سطر من `sw.js`، مثلاً `qallab-v12` إلى `qallab-v13`، ورقم الإصدار أسفل `index.html`، عشان النسخة المحفوظة للعمل بدون إنترنت تتحدث.
 - إذا أضفت ملفاً جديداً، أضفه لقائمة `ASSETS` في `sw.js`.
 
 ### المكتبات
@@ -232,12 +253,13 @@ python3 -m http.server 8080
 | [pdf-lib](https://github.com/Hopding/pdf-lib) | 1.17.1 | إنشاء ودمج PDF | MIT |
 | [PDF.js](https://github.com/mozilla/pdf.js) | 3.11.174 | قراءة صفحات PDF ورسمها | Apache-2.0 |
 | [heic2any](https://github.com/alexcorvi/heic2any) | 0.0.4 | قراءة صور HEIC | MIT |
-| [UTIF.js](https://github.com/photopea/UTIF.js) | 3.1.0 | قراءة وكتابة TIFF | MIT |
+| [UTIF.js](https://github.com/photopea/UTIF.js) | 3.1.0 | قراءة TIFF | MIT |
+| [UPNG.js](https://github.com/photopea/UPNG.js) | نسخة نوفمبر 2026 | ضغط PNG ولوحة ألوان GIF | MIT |
 | [pako](https://github.com/nodeca/pako) | 2.1.0 | فك ضغط TIFF | MIT / Zlib |
 | [JSZip](https://github.com/Stuk/jszip) | 3.10.1 | تنزيل الكل كـ ZIP | MIT |
 | [IBM Plex Sans Arabic](https://github.com/IBM/plex) | 5.0.20 | الخط البديل خارج أجهزة أبل | OFL-1.1 |
 
-مُرمّزات BMP وICO وGIF مكتوبة داخل `app.js` بدون مكتبات.
+مُرمّزات PNG وTIFF وGIF وBMP وICO مكتوبة داخل `worker.js` و`app.js`. المكتبات تُحمَّل عند الحاجة فقط، فالتطبيق يفتح بدون ما يحمّل أياً منها.
 
 </div>
 
@@ -247,6 +269,6 @@ python3 -m http.server 8080
 
 ### English
 
-**Qallab** (Arabic for *the one who flips things over*) is built for sensitive documents such as ID cards, passports and bank statements: shrink, compress, crop to an exact size or change the format without uploading anything. It is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. The interface follows Apple's Human Interface Guidelines (system font, inset grouped lists, capsule buttons, bottom sheets) in automatic light and dark mode, fully right-to-left. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
+**Qallab** (Arabic for *the one who flips things over*) is built for sensitive documents such as ID cards, passports and bank statements: shrink, compress, crop to an exact size or change the format without uploading anything. It is an installable, offline-first PWA that converts images to PDF and back, and between image formats: JPG, PNG, WEBP, AVIF, HEIC, TIFF, GIF, BMP, ICO and SVG. Everything runs locally in the browser, so files never leave the device. It also merges PDFs, compresses PDFs, shows the exact pixel size for each DPI, and includes a crop / rotate / resize editor, an output viewer, and download, save-to-Photos and share actions. It can hit a maximum file size automatically, compress PDFs while keeping their text selectable, and runs the heavy work in a Web Worker with a cancel button. The interface follows Apple's Human Interface Guidelines (system font, inset grouped lists, capsule buttons, bottom sheets) in automatic light and dark mode, fully right-to-left. No build step: serve the folder over HTTPS (e.g. GitHub Pages) and it works.
 
 </div>

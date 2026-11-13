@@ -1,19 +1,22 @@
-const CACHE = 'qallab-v11';
+const CACHE = 'qallab-v12';
 const ASSETS = [
   "./",
   "app.js",
   "design-tokens.css",
   "editor.js",
   "viewer.js",
+  "worker.js",
   "fonts/ibm-plex-sans-arabic-arabic-400-normal.woff2",
   "fonts/ibm-plex-sans-arabic-arabic-600-normal.woff2",
   "fonts/ibm-plex-sans-arabic-latin-400-normal.woff2",
   "fonts/ibm-plex-sans-arabic-latin-600-normal.woff2",
+  "icons/icon-180.png",
   "icons/icon-192-maskable.png",
   "icons/icon-192.png",
   "icons/icon-512-maskable.png",
   "icons/icon-512.png",
   "index.html",
+  "lib/UPNG.js",
   "lib/UTIF.js",
   "lib/heic2any.min.js",
   "lib/jszip.min.js",
@@ -29,14 +32,28 @@ self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
 });
 self.addEventListener('activate', (e) => {
-  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
+  e.waitUntil(caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE && k !== SHARE).map((k) => caches.delete(k)))).then(() => self.clients.claim()));
 });
 /* App shell (page, css, our js, manifest): network first, so an online visit always shows the latest version;
    the cache is the offline fallback. Libraries, fonts and icons never change: cache first. */
 const isShell = (url) => url.origin === location.origin && !/\/(lib|fonts|icons)\//.test(url.pathname);
+/* Android share sheet (manifest share_target): the shared files are parked in a cache on this device and the
+   page takes them out and deletes them as soon as it opens (takeShared in app.js). Nothing is sent anywhere. */
+const SHARE = 'qallab-share';
+async function receiveShare(request) {
+  const form = await request.formData(), cache = await caches.open(SHARE);
+  for (const k of await cache.keys()) await cache.delete(k);
+  let i = 0;
+  for (const f of form.getAll('files')) {
+    if (!(f instanceof File)) continue;
+    await cache.put('shared/' + i++, new Response(f, { headers: { 'content-type': f.type || 'application/octet-stream', 'x-name': encodeURIComponent(f.name) } }));
+  }
+  return Response.redirect('./?shared', 303);
+}
 self.addEventListener('fetch', (e) => {
-  if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
+  if (e.request.method === 'POST' && url.origin === location.origin && url.pathname.endsWith('/share')) { e.respondWith(receiveShare(e.request)); return; }
+  if (e.request.method !== 'GET') return;
   if (isShell(url)) {
     e.respondWith(
       fetch(e.request, { cache: 'no-cache' })
