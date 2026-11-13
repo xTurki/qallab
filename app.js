@@ -1,6 +1,19 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
 
+/* Self-heal: if this script is newer than the page it runs in (an old index.html came out of a cache), the
+   controls it expects are missing and the wiring below would stop half-way. Drop the caches and the service
+   worker and load the page fresh, once. */
+if (!$('cancelBtn') || !$('tsize')) {
+  (async () => {
+    try {
+      for (const k of await caches.keys()) await caches.delete(k);
+      for (const r of await navigator.serviceWorker.getRegistrations()) await r.unregister();
+    } catch { /* nothing to clear */ }
+    if (!sessionStorage.getItem('qallab-healed')) { sessionStorage.setItem('qallab-healed', '1'); location.reload(); }
+  })();
+}
+
 /* ---------- libraries load on first use, so the page opens without parsing a megabyte of code ---------- */
 const LIBS = { pdf: ['lib/pdf.min.js'], tiff: ['lib/pako.min.js', 'lib/UTIF.js'], zip: ['lib/jszip.min.js'], heic: ['lib/heic2any.min.js'] };
 const libReady = {};
@@ -588,7 +601,7 @@ $('pdfc').onchange = syncOptions;
 $('tsize').onchange = syncOptions;
 $('quality').oninput = (e) => {
   const r = e.target; $('qOut').textContent = r.value + '%';
-  r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min)) * 100 + '%'); // slider track fill
+  r.style.setProperty('--p', (r.value - r.min) / (r.max - r.min)); // 0..1, drives the slider fill in styles.css
 };
 $('quality').oninput({ target: $('quality') });
 $('goBtn').onclick = run;

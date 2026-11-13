@@ -1,4 +1,4 @@
-const CACHE = 'qallab-v12';
+const CACHE = 'qallab-v13';
 const ASSETS = [
   "./",
   "app.js",
@@ -56,7 +56,7 @@ self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
   if (isShell(url)) {
     e.respondWith(
-      fetch(e.request, { cache: 'no-cache' })
+      fetch(e.request.url, { cache: 'no-cache' }) // by URL: re-using a navigation request with new options fails in some browsers
         .then((res) => {
           if (res.ok) { const copy = res.clone(); caches.open(CACHE).then((c) => c.put(e.request, copy)); }
           return res;

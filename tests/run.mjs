@@ -93,6 +93,8 @@ try {
   T('CSP blocks a connection to another site', await ev(`fetch('https://example.com/').then(() => 'NOT BLOCKED', () => true)`));
   T('CSP blocks loading an image from another site', await ev(`new Promise((r) => { const i = new Image(); i.onload = () => r('LOADED'); i.onerror = () => r(true); i.src = 'https://example.com/x.png?leak=1'; })`));
   T('no library is loaded until it is needed', await ev(`['pdfjsLib', 'PDFLib', 'UTIF', 'JSZip', 'heic2any', 'pako'].every((k) => typeof window[k] === 'undefined')`));
+  r = await ev(`(() => { const q = $('quality'), bg = () => getComputedStyle(q).backgroundImage; const before = bg(); q.value = 55; q.dispatchEvent(new Event('input')); const after = bg(); const out = $('qOut').textContent; q.value = 90; q.dispatchEvent(new Event('input')); return { before, after, out, p: q.style.getPropertyValue('--p') }; })()`);
+  T('quality slider: the blue fill follows the value', r.before !== r.after && r.out === '55%' && /gradient/.test(r.after) ? true : r);
   T('file names cannot inject markup', await ev(`extOf('x.<b>') === 'B' && extOf('a.p<i') === 'PI'`));
   await ev(`__csp.length = 0`); pageErrors.length = 0;
 
