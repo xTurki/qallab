@@ -3,6 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- The browser enforces the privacy promise: nothing on this page can connect to, or load from, another site.
+     'unsafe-eval' is needed only by the HEIC decoder (lib/heic2any). -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-eval'; worker-src 'self' blob:; child-src 'self' blob:; img-src 'self' blob: data:; style-src 'self'; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'none'">
 <title>قلّاب</title>
 <meta name="description" content="حوّل الصور إلى PDF والعكس، وبين جميع صيغ الصور، داخل جهازك وبدون إنترنت.">
 <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
@@ -56,7 +59,7 @@
       <div class="opt stack" data-for="quality">
         <label for="quality">الجودة</label>
         <output id="qOut" class="num value">90%</output>
-        <input id="quality" type="range" min="40" max="100" value="90" style="--p:83.3%">
+        <input id="quality" type="range" min="40" max="100" value="90">
       </div>
       <div class="opt" data-for="dpi">
         <label for="dpi">دقة صفحات PDF</label>
@@ -111,7 +114,7 @@
 
   <div class="run">
     <button id="goBtn" class="btn-primary lg" disabled>أضف ملفات أولاً</button>
-    <div id="progress" class="progress" hidden><div id="bar"></div></div>
+    <div id="progress" class="progress" role="progressbar" aria-label="تقدّم التحويل" aria-valuemin="0" aria-valuemax="100" hidden><div id="bar"></div></div>
     <p id="status" class="status" aria-live="polite"></p>
   </div>
 
@@ -125,7 +128,7 @@
     <p class="group-foot">اضغط على أي ملف لمعاينته.</p>
   </section>
 
-  <footer class="foot">يعمل بدون إنترنت بعد أول فتح · <span id="ver">v1.5.4</span></footer>
+  <footer class="foot">يعمل بدون إنترنت بعد أول فتح · <span id="ver">v1.6</span></footer>
 </div>
 
 <div id="editor" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="edTitle">

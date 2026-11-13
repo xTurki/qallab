@@ -14,7 +14,7 @@ const pxAt = (ref, dpi) => ltr(`${Math.ceil((ref.w * dpi) / 72 - 1e-6)}×${Math.
 
 async function probePdf(item) {
   try {
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await item.file.arrayBuffer()) }).promise;
+    const pdf = await openPdf(new Uint8Array(await item.file.arrayBuffer()));
     const vp = (await pdf.getPage(1)).getViewport({ scale: 1 });
     item.info = { w: vp.width, h: vp.height, pages: pdf.numPages };
     await pdf.destroy();
@@ -102,7 +102,7 @@ const drawPcts = () => chips('pcts', PCTS.map((p) => [p + '%', p]), (p) => { ed.
 async function openEditor(item) {
   ed.item = item;
   $('edName').textContent = item.file.name;
-  $('editor').hidden = false; document.body.classList.add('locked');
+  sheetOpen($('editor'), $('edCancel'));
   $('cropInfo').textContent = 'جارٍ تحميل الصورة…';
   try {
     const it = decode(item, 150); const fr = (await it.next()).value; it.return && it.return();
@@ -114,7 +114,7 @@ async function openEditor(item) {
   refreshRotation(false);
 }
 function closeEditor() {
-  $('editor').hidden = true; document.body.classList.remove('locked');
+  sheetClose($('editor'));
   ed.item = null; ed.src = ed.rotated = null;
 }
 

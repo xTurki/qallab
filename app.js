@@ -1,6 +1,24 @@
 'use strict';
 const $ = (id) => document.getElementById(id);
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'lib/pdf.worker.min.js';
+/* isEvalSupported:false closes CVE-2024-4367 (script execution from a crafted PDF) in this PDF.js version */
+const openPdf = (data) => pdfjsLib.getDocument({ data, isEvalSupported: false }).promise;
+
+/* Safari on iOS draws nothing on a canvas above ~16.7 megapixels, and recent iPhone photos are 24-48 MP.
+   Anything larger is scaled down to fit; other browsers get a far higher ceiling. */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const MAX_AREA = IS_IOS ? 16777216 : 120000000;
+let clamped = 0; // inputs scaled down by fitArea during the current run
+function fitArea(w, h) {
+  const s = Math.min(1, Math.sqrt(MAX_AREA / (w * h)));
+  if (s < 1) clamped++;
+  return [Math.max(1, Math.floor(w * s)), Math.max(1, Math.floor(h * s))];
+}
+function pdfViewport(page, dpi) {
+  const base = page.getViewport({ scale: 1 });
+  const want = (base.width * dpi) / 72, [w] = fitArea(want, (base.height * dpi) / 72);
+  return page.getViewport({ scale: w < Math.floor(want) ? w / base.width : dpi / 72 }); // exact dpi unless capped
+}
 
 const TARGETS = [
   { key: 'pdf', label: 'PDF', ext: 'pdf', mime: 'application/pdf' },
@@ -33,6 +51,7 @@ function renderTargets() {
     if (t.key === 'pdf') b.className = 'pdf';
     b.setAttribute('role', 'radio');
     b.setAttribute('aria-checked', String(state.target === t.key));
+    b.tabIndex = state.target === t.key ? 0 : -1; // roving tabindex: the radio group is one tab stop
     if (t.key in ENCODABLE && !ENCODABLE[t.key]) { b.disabled = true; b.title = 'متصفحك لا يدعم الحفظ بهذه الصيغة'; }
     b.onclick = () => { state.target = t.key; renderTargets(); syncOptions(); };
     box.appendChild(b);
@@ -68,7 +87,7 @@ function kindOf(file) {
   if (file.type.startsWith('image/') || /\.(png|jpe?g|webp|gif|bmp|avif|svg|ico|jfif)$/.test(n)) return 'image';
   return null;
 }
-const extOf = (name) => (name.split('.').pop() || '').toUpperCase().slice(0, 4);
+const extOf = (name) => (name.split('.').pop() || '').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 4); // goes into innerHTML
 const baseOf = (name) => name.replace(/\.[^.]+$/, '') || 'file';
 function fmtSize(b) { return b < 1024 ? b + ' B' : b < 1048576 ? (b / 1024).toFixed(0) + ' KB' : (b / 1048576).toFixed(1) + ' MB'; }
 
@@ -88,6 +107,7 @@ function addFiles(list) {
 
 function renderQueue() {
   $('queueSec').hidden = !state.files.length;
+  $('drop').classList.toggle('compact', !!state.files.length);
   $('count').textContent = state.files.length ? `(${state.files.length})` : '';
   const ul = $('queue'); ul.innerHTML = '';
   for (const f of state.files) {
@@ -130,7 +150,7 @@ async function blobToCanvas(blob) {
   try {
     const img = await loadImg(url);
     let w = img.naturalWidth || 1024, h = img.naturalHeight || 1024; // SVG without size falls back to 1024
-    return toCanvas(img, w, h);
+    return toCanvas(img, ...fitArea(w, h));
   } finally { URL.revokeObjectURL(url); }
 }
 let heicLoading = null;
@@ -144,10 +164,10 @@ function loadHeic() {
 async function* decode(item, dpi) {
   const { file, kind } = item;
   if (kind === 'pdf') {
-    const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+    const pdf = await openPdf(new Uint8Array(await file.arrayBuffer()));
     for (let p = 1; p <= pdf.numPages; p++) {
       const page = await pdf.getPage(p);
-      const vp = page.getViewport({ scale: dpi / 72 });
+      const vp = pdfViewport(page, dpi);
       const c = document.createElement('canvas'); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
       const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
       await page.render({ canvasContext: ctx, viewport: vp }).promise;
@@ -274,9 +294,11 @@ function shrink(canvas, max) {
     const ctx = c.getContext('2d'); ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(src, 0, 0, w, h); return c;
   };
+  // intermediate canvases are freed as soon as the next step is drawn (iOS caps total canvas memory)
+  const free = (c) => { if (c !== canvas) c.width = c.height = 0; };
   let src = canvas, w = canvas.width, h = canvas.height;
-  while (w / 2 > tw) { w = Math.round(w / 2); h = Math.round(h / 2); src = step(src, w, h); }
-  return step(src, tw, th);
+  while (w / 2 > tw) { w = Math.round(w / 2); h = Math.round(h / 2); const next = step(src, w, h); free(src); src = next; }
+  const out = step(src, tw, th); free(src); return out;
 }
 
 /* ---------- PDF building ---------- */
@@ -298,15 +320,15 @@ async function addImagePage(doc, canvas, q, bg, pageMode, maxdim) {
 /* PDF compression: re-render each page as a JPEG at the chosen dpi, keeping the original paper size.
    Returns the smaller of (compressed, original) so a file never gets bigger. */
 const PDFC_DPI = { medium: 150, strong: 100 };
-async function compressPdf(file, level, q, maxdim, onPage) {
+async function compressPdf(file, level, q, maxdim, onPage, force) {
   const { PDFDocument } = PDFLib;
   const dpi = PDFC_DPI[level];
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+  const pdf = await openPdf(new Uint8Array(await file.arrayBuffer()));
   const out = await PDFDocument.create();
   for (let p = 1; p <= pdf.numPages; p++) {
     onPage && onPage(p, pdf.numPages);
     const page = await pdf.getPage(p);
-    const base = page.getViewport({ scale: 1 }), vp = page.getViewport({ scale: dpi / 72 });
+    const base = page.getViewport({ scale: 1 }), vp = pdfViewport(page, dpi);
     const c = document.createElement('canvas'); c.width = Math.ceil(vp.width); c.height = Math.ceil(vp.height);
     const ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
     await page.render({ canvasContext: ctx, viewport: vp }).promise;
@@ -317,13 +339,16 @@ async function compressPdf(file, level, q, maxdim, onPage) {
   }
   await pdf.destroy();
   const bytes = await out.save();
-  if (bytes.length < file.size) return { bytes, compressed: true };
+  if (force || bytes.length < file.size) return { bytes, compressed: true };
   return { bytes: new Uint8Array(await file.arrayBuffer()), compressed: false };
 }
 
 /* ---------- run ---------- */
 function setStatus(t, cls = '') { const s = $('status'); s.textContent = t; s.className = 'status ' + cls; }
-function setProgress(f) { $('progress').hidden = f == null; $('bar').style.width = ((f || 0) * 100).toFixed(1) + '%'; }
+function setProgress(f) {
+  const p = $('progress'); p.hidden = f == null; p.setAttribute('aria-valuenow', Math.round((f || 0) * 100));
+  $('bar').style.width = ((f || 0) * 100).toFixed(1) + '%';
+}
 
 async function run() {
   if (state.busy || !state.files.length) return;
@@ -333,8 +358,9 @@ async function run() {
   const maxdim = key === 'ico' ? 0 : +$('maxdim').value, pdfc = $('pdfc').value;
   const merge = $('merge').checked || state.files.length === 1;
   const { PDFDocument } = PDFLib;
-  const results = [], errors = [];
-  let keptOriginal = 0;
+  const results = [], errors = [], locked = [];
+  let keptOriginal = 0, redrawn = 0;
+  clamped = 0;
   setProgress(0);
   try {
     let doc = key === 'pdf' && merge ? await PDFDocument.create() : null;
@@ -351,7 +377,15 @@ async function run() {
               const r = await compressPdf(item.file, pdfc, q, maxdim, (p, n) => setStatus(`${tag} — ضغط صفحة ${p} من ${n}`));
               bytes = r.bytes; if (!r.compressed) keptOriginal++;
             } else bytes = await item.file.arrayBuffer();
-            const src = await PDFDocument.load(bytes, { ignoreEncryption: true });
+            let src;
+            try { src = await PDFDocument.load(bytes); }
+            catch (e) {
+              // pdf-lib cannot copy pages out of an encrypted file (they come out blank), so redraw them as images.
+              // PDF.js opens owner-locked files; one that needs a password to open throws PasswordException below.
+              if (!/encrypt/i.test(e.message)) throw e;
+              const r = await compressPdf(item.file, 'medium', q, maxdim, (p, n) => setStatus(`${tag} — صفحة ${p} من ${n}`), true);
+              src = await PDFDocument.load(r.bytes); redrawn++;
+            }
             (await target.copyPages(src, src.getPageIndices())).forEach((p) => target.addPage(p));
           } else {
             for await (const fr of decode(item, dpi)) await addImagePage(target, applyEdit(fr.canvas, item.edit), q, bg, pageMode, maxdim);
@@ -368,7 +402,7 @@ async function run() {
             setStatus(`(${fi + 1}/${state.files.length}) ${item.file.name} — صفحة ${fr.page} من ${fr.pages}`);
           }
         }
-      } catch (e) { console.error(e); errors.push(item.file.name); }
+      } catch (e) { console.error(e); (e.name === 'PasswordException' ? locked : errors).push(item.file.name); }
       setProgress((fi + 1) / state.files.length);
     }
     if (doc && doc.getPageCount()) {
@@ -379,10 +413,17 @@ async function run() {
   } catch (e) { console.error(e); errors.push('—'); }
   state.results = results; renderResults();
   state.busy = false; syncOptions(); setProgress(null);
-  if (errors.length) { setStatus(`تعذّر تحويل: ${errors.join('، ')}. قد يكون الملف تالفاً أو محمياً بكلمة مرور.`, 'err'); return; }
+  if (errors.length || locked.length) {
+    const parts = [];
+    if (locked.length) parts.push(`محمي بكلمة مرور ولا يمكن فتحه: ${locked.join('، ')}.`);
+    if (errors.length) parts.push(`تعذّر تحويل: ${errors.join('، ')}. قد يكون الملف تالفاً أو بصيغة غير مدعومة.`);
+    setStatus(parts.join(' '), 'err'); return;
+  }
   const inB = state.files.reduce((s, f) => s + f.file.size, 0), outB = results.reduce((s, r) => s + r.blob.size, 0);
   let msg = `تم. ${results.length} ${results.length === 1 ? 'ملف جاهز' : 'ملفات جاهزة'} للتنزيل. الحجم: ${iso(fmtSize(inB))} ← ${iso(fmtSize(outB))} (${iso(pct(inB, outB))}).`;
   if (keptOriginal) msg += ` ${keptOriginal === 1 ? 'ملف PDF واحد' : keptOriginal + ' ملفات PDF'} كان أصغر بدون ضغط، فأُبقي كما هو.`;
+  if (redrawn) msg += ` ${redrawn === 1 ? 'ملف PDF مقفل' : redrawn + ' ملفات PDF مقفلة'} أُعيد رسم صفحاته كصور.`;
+  if (clamped) msg += ' بعض الصور أكبر من حد هذا الجهاز فصُغّرت قليلاً.';
   setStatus(msg, 'ok');
 }
 const iso = (x) => '\u2066' + x + '\u2069';
@@ -439,13 +480,46 @@ const drop = $('drop');
 ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
 drop.addEventListener('drop', (e) => addFiles(e.dataTransfer.files));
 document.addEventListener('paste', (e) => { const f = [...(e.clipboardData?.files || [])]; if (f.length) addFiles(f); });
-$('clearBtn').onclick = () => { state.files.forEach((f) => f.thumb && URL.revokeObjectURL(f.thumb)); state.files = []; renderQueue(); syncOptions(); clearResults(); setStatus(''); updateDpiLabels(); };
+$('clearBtn').onclick = () => {
+  if ((state.files.length > 1 || state.results.length) && !confirm('مسح كل الملفات والناتج؟')) return;
+  state.files.forEach((f) => f.thumb && URL.revokeObjectURL(f.thumb)); state.files = []; renderQueue(); syncOptions(); clearResults(); setStatus(''); updateDpiLabels();
+};
 $('pdfc').onchange = syncOptions;
 $('quality').oninput = (e) => {
   const r = e.target; $('qOut').textContent = r.value + '%';
   r.style.setProperty('--p', ((r.value - r.min) / (r.max - r.min)) * 100 + '%'); // slider track fill
 };
+$('quality').oninput({ target: $('quality') });
 $('goBtn').onclick = run;
+
+/* arrow keys move the selection inside the format radio group (RTL: right = previous) */
+$('targets').addEventListener('keydown', (e) => {
+  const d = { ArrowRight: -1, ArrowUp: -1, ArrowLeft: 1, ArrowDown: 1 }[e.key]; if (!d) return;
+  e.preventDefault();
+  const ok = TARGETS.filter((t) => !(t.key in ENCODABLE && !ENCODABLE[t.key]));
+  const i = ok.findIndex((t) => t.key === state.target);
+  state.target = ok[(i + d + ok.length) % ok.length].key; renderTargets(); syncOptions();
+  $('targets').querySelector('[aria-checked="true"]').focus();
+});
+
+/* modal sheets: move focus in, make the page behind inert, give focus back on close */
+let sheetReturn = null;
+function sheetOpen(el, focusEl) {
+  sheetReturn = document.activeElement; el.hidden = false;
+  document.body.classList.add('locked'); document.querySelector('.wrap').inert = true; focusEl.focus();
+}
+function sheetClose(el) {
+  el.hidden = true; document.body.classList.remove('locked'); document.querySelector('.wrap').inert = false;
+  if (sheetReturn && sheetReturn.isConnected) sheetReturn.focus();
+  sheetReturn = null;
+}
+
+/* installed app opened through "Open with" (manifest file_handlers) */
+if ('launchQueue' in window) {
+  launchQueue.setConsumer(async (params) => {
+    if (params.files && params.files.length) addFiles(await Promise.all(params.files.map((h) => h.getFile())));
+  });
+}
 $('zipBtn').onclick = downloadZip;
 
 let installEvt = null;

@@ -1,7 +1,6 @@
 'use strict';
 /* Output preview + download / save-to-photos / share. Loaded after app.js and editor.js. */
 
-const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 const PHOTO_TYPES = /^image\/(jpeg|png|gif|webp|avif)$/;
 const isPhoto = (r) => PHOTO_TYPES.test(r.blob.type);
 const fileOf = (r) => (r.file ||= new File([r.blob], r.name, { type: r.blob.type }));
@@ -75,10 +74,10 @@ function renderBulk() {
 /* ---------- viewer ---------- */
 const view = { i: 0, token: 0 };
 function openViewer(i) {
-  view.i = i; $('viewer').hidden = false; document.body.classList.add('locked');
+  view.i = i; sheetOpen($('viewer'), $('vClose'));
   showCurrent();
 }
-function closeViewer() { view.token++; $('viewer').hidden = true; document.body.classList.remove('locked'); $('vBody').innerHTML = ''; }
+function closeViewer() { view.token++; sheetClose($('viewer')); $('vBody').innerHTML = ''; }
 
 async function showCurrent() {
   const rs = state.results, r = rs[view.i]; if (!r) return closeViewer();
@@ -118,7 +117,7 @@ async function previewTiff(r, body) {
 
 const PDF_PREVIEW_MAX = 30;
 async function previewPdf(r, body, token) {
-  const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(await r.blob.arrayBuffer()) }).promise;
+  const pdf = await openPdf(new Uint8Array(await r.blob.arrayBuffer()));
   if (token !== view.token) { pdf.destroy(); return; }
   body.innerHTML = '';
   const width = Math.min(body.clientWidth || 360, 900), dpr = Math.min(window.devicePixelRatio || 1, 2);
