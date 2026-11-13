@@ -195,15 +195,21 @@ try {
   const csp = await ev(`__csp`);
   T('no Content-Security-Policy violations during the run', Array.isArray(csp) && csp.length === 0 ? true : csp);
 
-  /* ===== iPhone: canvas area limit ===== */
+  /* ===== large images: no fixed limit ===== */
+  await open('index.html?big');
+  r = await ev(`(async () => { addFiles([await mk(13000, 10000, 'pro130mp.png')]); const c = await conv('jpg'); return { ...c, real: await dimsOf(state.results[0].blob) }; })()`);
+  T('a 130 MP image is converted at full size when the device allows it', r.n === 1 && r.dims[0] === '13000x10000' && r.real === '13000x10000' && !/صُغّرت/.test(r.status) ? true : r, r.dims?.[0]);
+
+  /* ===== a device that refuses large canvases (iPhone-like 16.7 MP) ===== */
   await send('Emulation.setUserAgentOverride', { userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Mobile/15E148 Safari/604.1', platform: 'iPhone' });
   await open('index.html?ios');
-  T('iPhone is detected and capped at 16.7 MP', await ev(`IS_IOS === true && MAX_AREA === 16777216`));
+  await ev(`window.canvasWorks = (w, h) => w * h <= 16777216 && Math.max(w, h) <= 16384`);
+  T('iPhone is detected', await ev(`IS_IOS === true`));
   r = await ev(`(async () => { addFiles([await mk(6000, 4000, 'big24mp.png')]); return await conv('jpg'); })()`);
   { const [w, h] = (r.dims?.[0] || '0x0').split('x').map(Number);
-    T('a 24 MP photo is scaled under the cap with its ratio kept', w * h <= 16777216 && w * h > 16e6 && Math.abs(w / h - 1.5) < 0.01 && /صُغّرت/.test(r.status) ? true : r, r.dims?.[0]); }
+    T('a 24 MP photo is scaled to the largest size the device accepts, ratio kept', w * h <= 16777216 && w * h > 16e6 && Math.abs(w / h - 1.5) < 0.01 && /صُغّرت/.test(r.status) ? true : r, r.dims?.[0]); }
   r = await ev(`(async () => { reset(); addFiles([await mkPdf('doc.pdf')]); await wait(600); set('dpi', '600'); return await conv('png'); })()`);
-  T('a PDF page at 600 dpi is capped on iPhone', Array.isArray(r.dims) && r.dims.every((d) => { const [a, b] = d.split('x').map(Number); return a * b <= 16777216 && a > 3000; }) ? true : r, r.dims?.[0]);
+  T('a PDF page at 600 dpi is scaled to what the device accepts', Array.isArray(r.dims) && r.dims.every((d) => { const [a, b] = d.split('x').map(Number); return a * b <= 16777216 && a > 3000; }) ? true : r, r.dims?.[0]);
 
   T('no page errors', pageErrors.length === 0 ? true : [...new Set(pageErrors)]);
 } catch (e) { failed++; console.error('TEST RUN CRASHED:', e); }

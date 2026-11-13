@@ -51,15 +51,43 @@ const W = (() => {
 })();
 const bufOf = (b) => b.buffer || b; // ArrayBuffer of an ArrayBuffer or a typed array, for transfer lists
 
-/* Safari on iOS draws nothing on a canvas above ~16.7 megapixels, and recent iPhone photos are 24-48 MP.
-   Anything larger is scaled down to fit; other browsers get a far higher ceiling. */
 const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-const MAX_AREA = IS_IOS ? 16777216 : 120000000;
+
+/* ---------- image size: no fixed limit ----------
+   Browsers refuse canvases beyond some size, and the size differs by browser and device (Safari on iPhone is the
+   strictest). A refused canvas does not throw: it silently stays blank. So instead of assuming a number, the
+   real size is tried on this device first. Only if the device refuses it is the image scaled down, to the
+   largest size that does work, and the user is told. */
+function canvasWorks(w, h) {
+  try {
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const x = c.getContext('2d'); if (!x) return false;
+    x.fillRect(w - 1, h - 1, 1, 1);
+    const ok = x.getImageData(w - 1, h - 1, 1, 1).data[3] === 255; // a refused canvas reads back transparent
+    c.width = c.height = 0;
+    return ok;
+  } catch { return false; }
+}
+const AREA_STEPS = [268435456, 201326592, 134217728, 100663296, 67108864, 50331648, 33554432, 25165824, 16777216, 8388608, 4194304, 1048576];
+const proven = { area: 4194304, side: 4096 }; // sizes already seen to work here, so they are not tried twice
 let clamped = 0; // inputs scaled down by fitArea during the current run
 function fitArea(w, h) {
-  const s = Math.min(1, Math.sqrt(MAX_AREA / (w * h)));
-  if (s < 1) clamped++;
-  return [Math.max(1, Math.floor(w * s)), Math.max(1, Math.floor(h * s))];
+  w = Math.max(1, Math.floor(w)); h = Math.max(1, Math.floor(h));
+  const known = (cw, ch) => cw * ch <= proven.area && Math.max(cw, ch) <= proven.side;
+  const works = (cw, ch) => {
+    if (known(cw, ch)) return true;
+    if (!canvasWorks(cw, ch)) return false;
+    proven.area = Math.max(proven.area, cw * ch); proven.side = Math.max(proven.side, cw, ch);
+    return true;
+  };
+  if (works(w, h)) return [w, h];
+  clamped++;
+  for (const area of AREA_STEPS) {
+    if (area >= w * h) continue;
+    const s = Math.sqrt(area / (w * h)), cw = Math.max(1, Math.floor(w * s)), ch = Math.max(1, Math.floor(h * s));
+    if (works(cw, ch)) return [cw, ch];
+  }
+  return [Math.max(1, Math.min(w, 1024)), Math.max(1, Math.min(h, 1024))];
 }
 function pdfViewport(page, dpi) {
   const base = page.getViewport({ scale: 1 });
